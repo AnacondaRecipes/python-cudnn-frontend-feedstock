@@ -40,7 +40,7 @@ requirements:
     - cudnn # pinned by run_exports
 
     # from cudnn-frontend requirements.txt:
-    - jupyter
+    #- jupyter
     # numpy only used in benchmarks. Does not look like it is directly loaded by cudnn-frontend
     #- numpy <=2.0.0
     #- pybind11 >=2.13,<3
