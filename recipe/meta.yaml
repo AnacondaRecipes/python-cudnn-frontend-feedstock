@@ -1,0 +1,91 @@
+{% set name = "python-cudnn-frontend" %}
+{% set version = "1.18.0" %}
+{% set build_num = 0 %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/NVIDIA/cudnn-frontend/archive/v{{ version }}.tar.gz
+  sha256: 122dde9e9ee37cc05d626097b3c85d507be0db3f73ee196baa5a034069460517
+
+build:
+  number: {{ build_num }}
+  string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
+  skip: true # [cuda_compiler_version in (undefined, "None") or (not linux)]
+  script:
+    - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('cuda') }}
+    - {{ stdlib("c") }}
+    - cmake >=3.18
+    - make
+    - ninja-base >=1.11.1.1
+  host:
+    - cuda-version =={{ cuda_compiler_version }}
+    - cuda-nvrtc-dev
+    - cudnn
+    - pip
+    - pybind11 >=2.13,<3
+    - pybind11-abi
+    - python
+    - setuptools >=64
+  run:
+    - python
+    - cudnn # pinned by run_exports
+
+    # from cudnn-frontend requirements.txt:
+    - jupyter
+    # numpy only used in benchmarks. Does not look like it is directly loaded by cudnn-frontend
+    #- numpy <=2.0.0
+    #- pybind11 >=2.13,<3
+
+    #- black ==26.3.1
+    - __cuda
+
+test:
+  source_files:
+    - test/python
+  requires:
+    - pip
+    - pytest
+    - looseversion
+    #- pytest-xdist
+  imports:
+    - cudnn
+  commands:
+    - pip check
+    - python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
+    # PY_VER is not available in 'tests' section with rattler-build
+    - export PY_VER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+    - ls -lh $PREFIX/lib/python$PY_VER/site-packages/include/
+    - test -f $PREFIX/lib/python$PY_VER/site-packages/include/cudnn_frontend.h
+    - pytest test/python
+
+about:
+  home: https://github.com/NVIDIA/cudnn-frontend
+  summary: cuDNN FrontEnd API
+  description: |
+    cuDNN Frontend is NVIDIA's modern, open-source entry point to the cuDNN
+    library and a growing collection of high-performance open-source
+    kernels — scaled dot-product attention (SDPA / Flash Attention),
+    grouped GEMM fusions for Mixture-of-Experts (MoE) training, fused
+    normalization + activation, and more.
+  license: MIT
+  license_file:
+    - LICENSE.txt
+    - include/cudnn_frontend/thirdparty/nlohmann/LICENSE.MIT
+  license_family: MIT
+  doc_url: https://docs.nvidia.com/deeplearning/cudnn/latest/
+  dev_url: https://github.com/NVIDIA/cudnn-frontend
+
+
+extra:
+  recipe-maintainers:
+    - jameslamb
+    - weiji14
