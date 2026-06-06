@@ -49,15 +49,33 @@ requirements:
     #- black ==26.3.1
     - __cuda
 
+# t1441_b32_M3848xN4096xK1936_f32_gelu
+#E   torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 7.39 GiB. GPU 0 has a total capacity of 14.56 GiB of which 6.26 GiB is free
+{% set skip_tests = "t1441_b32_M3848xN4096xK1936_f32_gelu" %}
+# test_matmul_bias
+# E   Warning: CUDNN_STATUS_NOT_SUPPORTED_ARCH_MISMATCH; Reason: FORT_NATIVE_8X engine is only supported since Ampere architecture at: !(800 <= this->getDeviceProp()->deviceVer)
+{% set skip_tests = skip_tests + " or test_matmul_bias" %}
+# test_silu_and_mul_and_quantization
+# E   AssertionError: Legacy CUDA profiling requires use_cpu=True
+{% set skip_tests = skip_tests + " or test_silu_and_mul_and_quantization" %}
+# test_in
+# E   RuntimeError: execute(handle, plan->get_raw_desc(), variant_pack_descriptor.get_ptr()) failed with message: , and code: CUDNN_STATUS_NOT_SUPPORTED_ARCH_MISMATCH
+{% set skip_tests = skip_tests + " or test_in" %}
+# test_conv_int8
+# Torch does not support int8 convolution. Disabling comparison of output tensor
+{% set skip_tests = skip_tests + " or test_conv_int8" %}
+# test/python/fe_api/test_grouped_gemm_swiglu.py
+# These tests require python cutlass, which we don't have on the main channel
+{% set ignore_tests = "--ignore test/python/fe_api/test_grouped_gemm_swiglu.py" %}
+
 test:
   source_files:
     - test/python
   requires:
     - pip
     - pytest
-    - https://staging.continuum.io/pbp/fs/looseversion-feedstock/pr3/eb0078d::looseversion
+    - looseversion
     - pytorch
-    #- pytest-xdist
   imports:
     - cudnn
   commands:
@@ -67,7 +85,7 @@ test:
     - export PY_VER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
     - ls -lh $PREFIX/lib/python$PY_VER/site-packages/include/
     - test -f $PREFIX/lib/python$PY_VER/site-packages/include/cudnn_frontend.h
-    - pytest test/python
+    - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})"
 
 about:
   home: https://github.com/NVIDIA/cudnn-frontend
