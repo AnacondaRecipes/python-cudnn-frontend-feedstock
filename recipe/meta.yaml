@@ -14,6 +14,8 @@ build:
   number: {{ build_num }}
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
   skip: true # [cuda_compiler_version in (undefined, "None") or (not linux)]
+  script_env:
+    - CUDNN_FRONTEND_USE_SYSTEM_DLPACK=ON
   script:
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
