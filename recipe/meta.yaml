@@ -9,13 +9,13 @@ package:
 source:
   url: https://github.com/NVIDIA/cudnn-frontend/archive/v{{ version }}.tar.gz
   sha256: 122dde9e9ee37cc05d626097b3c85d507be0db3f73ee196baa5a034069460517
+  patches:
+    - patches/0001-unvendor-dependencies.patch
 
 build:
   number: {{ build_num }}
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
   skip: true # [cuda_compiler_version in (undefined, "None") or (not linux)]
-  script_env:
-    - CUDNN_FRONTEND_USE_SYSTEM_DLPACK=ON
   script:
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
