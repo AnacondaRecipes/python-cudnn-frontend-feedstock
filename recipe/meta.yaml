@@ -70,9 +70,9 @@ requirements:
 # These tests require python cutlass, which we don't have on the main channel
 {% set ignore_tests = " --ignore test/python/fe_api/test_grouped_gemm_swiglu.py" %}
 
-# A lot of out of memory errors coming from this file
+# A lot of out of memory errors coming from these files
 {% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas.py" %}
-#{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas_v2.py" %}
+{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas_v2.py" %}
 
 
 test:
