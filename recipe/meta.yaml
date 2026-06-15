@@ -73,6 +73,10 @@ requirements:
 # A lot of out of memory errors coming from this file
 {% set ignore_tests = ignore_tests + "--ignore test/python/test_mhas_v2.py" %}
 
+
+# these tests require nvidia-cutlass-dsl
+{% set ignore_tests = ignore_tests + "--ignore test/python/test_mhas_v2.py" %}
+
 test:
   source_files:
     - test/python
@@ -81,7 +85,6 @@ test:
     - pytest
     - looseversion
     - pytorch
-    - cuda-python
   imports:
     - cudnn
   commands:
