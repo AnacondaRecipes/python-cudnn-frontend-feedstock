@@ -81,6 +81,7 @@ test:
     - pytest
     - looseversion
     - pytorch
+    - cuda-python
   imports:
     - cudnn
   commands:
