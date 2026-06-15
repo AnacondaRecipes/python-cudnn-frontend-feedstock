@@ -71,11 +71,9 @@ requirements:
 {% set ignore_tests = " --ignore test/python/fe_api/test_grouped_gemm_swiglu.py" %}
 
 # A lot of out of memory errors coming from this file
-{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas_v2.py" %}
+{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas.py" %}
+#{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas_v2.py" %}
 
-
-# these tests require nvidia-cutlass-dsl
-{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas_v2.py" %}
 
 test:
   source_files:
