@@ -87,6 +87,7 @@ test:
     - cudnn
   commands:
     - pip check
+    - python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
     - python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
     # PY_VER is not available in 'tests' section with rattler-build
     - export PY_VER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
