@@ -1,0 +1,2 @@
+cuda_compiler_version: # [aarch64]
+  - 13.0               # [aarch64]
