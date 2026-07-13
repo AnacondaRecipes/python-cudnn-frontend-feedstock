@@ -100,7 +100,7 @@ test:
     # We're still "running" the tests so that if we run this recipe on an upgraded aarch64 system, we will be able
     # to see the test results in the logs without any recipe changes.
     # 2) pytorch is not support on CUDA 12.x on aarch64, so we skip those tests entirely.
-    - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})" || true # [aarch64 and not (cuda_compiler_version in ('12.4', '12.6', '12.7', '12.8', '12.9')) )]
+    - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})" || true # [aarch64 and not (cuda_compiler_version in ('12.4', '12.6', '12.7', '12.8', '12.9'))]
 
 about:
   home: https://github.com/NVIDIA/cudnn-frontend
