@@ -84,7 +84,7 @@ test:
     - python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
     - ls -lh $PREFIX/lib/python{{python}}/site-packages/include/ # [linux]
     - test -f $PREFIX/lib/python{{python}}/site-packages/include/cudnn_frontend.h # [linux]
-    - if not exist %PREFIX%\\lib\\python{{python}}\\site-packages\\include\\cudnn_frontend.h exit 1 # [win]
+    - if not exist %PREFIX%\\lib\\site-packages\\include\\cudnn_frontend.h exit 1 # [win]
     - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})" # [not aarch64]
 
     # 1) These tests will fail on linux-aarch64 due to our compute architecture being 7.5, but pytorch needing >= 8.0.
