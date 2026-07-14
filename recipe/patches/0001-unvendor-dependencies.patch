@@ -1,8 +1,8 @@
 diff --git a/setup.py b/setup.py
-index ac9ba60..9fb2c7c 100644
+index ac9ba60..320b4e8 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -46,6 +46,9 @@ class CMakeBuild(build_ext):
+@@ -46,12 +46,13 @@ class CMakeBuild(build_ext):
              # All these are handled by pip
              f"-DCMAKE_LIBRARY_OUTPUT_DIRECTORY={extdir}{os.sep}",
              f"-DCUDNN_FRONTEND_KEEP_PYBINDS_IN_BINARY_DIR=OFF",
@@ -12,3 +12,10 @@ index ac9ba60..9fb2c7c 100644
          ]
  
          if is_windows:
+-            cmake_args += [
+-                f"-DCUDNN_FRONTEND_FETCH_PYBINDS_IN_CMAKE=ON",
+-            ]
++            pass
+         else:
+             cmake_args += [
+                 f"-DCUDNN_FRONTEND_FETCH_PYBINDS_IN_CMAKE=OFF",
