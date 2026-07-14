@@ -15,7 +15,7 @@ source:
 build:
   number: {{ build_num }}
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
-  skip: true # [cuda_compiler_version in (undefined, "None") or (not linux)]
+  skip: true # [cuda_compiler_version in (undefined, "None") or (not (linux or win))]
   script:
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
@@ -26,7 +26,7 @@ requirements:
     - {{ compiler('cuda') }}
     - {{ stdlib("c") }}
     - cmake >=3.18
-    - make
+    - make # [linux]
     - ninja-base >=1.11.1.1
   host:
     - cuda-version =={{ cuda_compiler_version }}
@@ -41,14 +41,6 @@ requirements:
   run:
     - python
     - cudnn # pinned by run_exports
-
-    # from cudnn-frontend requirements.txt:
-    #- jupyter
-    # numpy only used in benchmarks. Does not look like it is directly loaded by cudnn-frontend
-    #- numpy <=2.0.0
-    #- pybind11 >=2.13,<3
-
-    #- black ==26.3.1
     - __cuda
 
 # t1441_b32_M3848xN4096xK1936_f32_gelu
@@ -100,7 +92,7 @@ test:
     # We're still "running" the tests so that if we run this recipe on an upgraded aarch64 system, we will be able
     # to see the test results in the logs without any recipe changes.
     # 2) pytorch is not support on CUDA 12.x on aarch64, so we skip those tests entirely.
-    - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})" || true # [aarch64 and not (cuda_compiler_version in ('12.4', '12.6', '12.7', '12.8', '12.9'))]
+    - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})" || true # [aarch64 and not (cuda_compiler_version.startswith("12"))]
 
 about:
   home: https://github.com/NVIDIA/cudnn-frontend
