@@ -16,7 +16,7 @@ source:
 build:
   number: {{ build_num }}
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
-  skip: true # [cuda_compiler_version in (undefined, "None") or (not (linux or win))]
+  skip: true # [cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith(12))]
   script:
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
@@ -59,6 +59,10 @@ requirements:
 # test_conv_int8
 # Torch does not support int8 convolution. Disabling comparison of output tensor
 {% set skip_tests = skip_tests + " or test_conv_int8" %}
+
+# skip some tests that run out of memory on Windows
+{% set skip_tests = skip_tests + " or test_conv_random_L0_0" %} # [win]
+
 # test/python/fe_api/test_grouped_gemm_swiglu.py
 # These tests require python cutlass, which we don't have on the main channel
 {% set ignore_tests = " --ignore test/python/fe_api/test_grouped_gemm_swiglu.py" %}
