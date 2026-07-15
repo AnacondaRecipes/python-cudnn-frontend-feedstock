@@ -16,7 +16,7 @@ source:
 build:
   number: {{ build_num }}
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
-  skip: true # [cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith(12))]
+  skip: true # [cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith("12"))]
   script:
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
