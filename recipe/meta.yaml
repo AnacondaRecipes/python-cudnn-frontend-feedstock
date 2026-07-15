@@ -1,0 +1,122 @@
+{% set name = "python-cudnn-frontend" %}
+{% set version = "1.18.0" %}
+{% set build_num = 0 %}
+
+package:
+  name: {{ name }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/NVIDIA/cudnn-frontend/archive/v{{ version }}.tar.gz
+  sha256: 122dde9e9ee37cc05d626097b3c85d507be0db3f73ee196baa5a034069460517
+  patches:
+    - patches/0001-unvendor-dependencies-dlpack-pybind.patch
+    - patches/0002-fix-windows-cuda-library-load.patch
+
+build:
+  number: {{ build_num }}
+  string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
+  skip: true # [cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith("12"))]
+  script:
+    - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - {{ compiler('cuda') }}
+    - {{ stdlib("c") }}
+    - cmake >=3.18
+    - make # [linux]
+    - ninja-base >=1.11.1.1
+  host:
+    - cuda-version =={{ cuda_compiler_version }}
+    - cuda-nvrtc-dev
+    - cudnn
+    - pip
+    - pybind11 >=2.13,<3
+    - pybind11-abi
+    - python
+    - setuptools >=64
+    - dlpack
+  run:
+    - python
+    - cudnn # pinned by run_exports
+    - __cuda
+
+# t1441_b32_M3848xN4096xK1936_f32_gelu
+#E   torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 7.39 GiB. GPU 0 has a total capacity of 14.56 GiB of which 6.26 GiB is free
+{% set skip_tests = "t1441_b32_M3848xN4096xK1936_f32_gelu" %}
+# test_matmul_bias
+# E   Warning: CUDNN_STATUS_NOT_SUPPORTED_ARCH_MISMATCH; Reason: FORT_NATIVE_8X engine is only supported since Ampere architecture at: !(800 <= this->getDeviceProp()->deviceVer)
+{% set skip_tests = skip_tests + " or test_matmul_bias" %}
+# test_silu_and_mul_and_quantization
+# E   AssertionError: Legacy CUDA profiling requires use_cpu=True
+{% set skip_tests = skip_tests + " or test_silu_and_mul_and_quantization" %}
+# test_in
+# E   RuntimeError: execute(handle, plan->get_raw_desc(), variant_pack_descriptor.get_ptr()) failed with message: , and code: CUDNN_STATUS_NOT_SUPPORTED_ARCH_MISMATCH
+{% set skip_tests = skip_tests + " or test_in" %}
+# test_conv_int8
+# Torch does not support int8 convolution. Disabling comparison of output tensor
+{% set skip_tests = skip_tests + " or test_conv_int8" %}
+
+# skip some tests that run out of memory on Windows
+{% set skip_tests = skip_tests + " or test_conv_random_L0_0" %} # [win]
+
+# test/python/fe_api/test_grouped_gemm_swiglu.py
+# These tests require python cutlass, which we don't have on the main channel
+{% set ignore_tests = " --ignore test/python/fe_api/test_grouped_gemm_swiglu.py" %}
+
+# A lot of out of memory errors coming from these files
+{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas.py" %}
+{% set ignore_tests = ignore_tests + " --ignore test/python/test_mhas_v2.py" %}
+
+
+test:
+  source_files:
+    - test/python
+  requires:
+    - pip
+    - pytest
+    - looseversion
+    - pytorch
+  imports:
+    - cudnn
+  commands:
+    - pip check
+    # Diagnostic output so we can check that we have CUDA
+    - python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
+    - python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
+    - ls -lh $PREFIX/lib/python{{python}}/site-packages/include/ # [linux]
+    - test -f $PREFIX/lib/python{{python}}/site-packages/include/cudnn_frontend.h # [linux]
+    - if not exist %PREFIX%\\lib\\site-packages\\include\\cudnn_frontend.h exit 1 # [win]
+    - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})" # [not aarch64]
+
+    # 1) These tests will fail on linux-aarch64 due to our compute architecture being 7.5, but pytorch needing >= 8.0.
+    # We're still "running" the tests so that if we run this recipe on an upgraded aarch64 system, we will be able
+    # to see the test results in the logs without any recipe changes.
+    # 2) pytorch is not support on CUDA 12.x on aarch64, so we skip those tests entirely.
+    - pytest test/python {{ ignore_tests }} -k "not ({{ skip_tests }})" || true # [aarch64 and not (cuda_compiler_version or "12").startswith("12")]
+
+about:
+  home: https://github.com/NVIDIA/cudnn-frontend
+  summary: cuDNN FrontEnd API
+  description: |
+    cuDNN Frontend is NVIDIA's modern, open-source entry point to the cuDNN
+    library and a growing collection of high-performance open-source
+    kernels — scaled dot-product attention (SDPA / Flash Attention),
+    grouped GEMM fusions for Mixture-of-Experts (MoE) training, fused
+    normalization + activation, and more.
+  license: MIT
+  license_file:
+    - LICENSE.txt
+    - include/cudnn_frontend/thirdparty/nlohmann/LICENSE.MIT
+  license_family: MIT
+  doc_url: https://docs.nvidia.com/deeplearning/cudnn/latest/
+  dev_url: https://github.com/NVIDIA/cudnn-frontend
+
+
+extra:
+  recipe-maintainers:
+    - jameslamb
+    - weiji14

@@ -1,0 +1,40 @@
+From ca3666b4a6add26fc6d178efd23158f9128265f1 Mon Sep 17 00:00:00 2001
+From: Andrew Howe <ahowe@anaconda.com>
+Date: Wed, 15 Jul 2026 13:35:13 -0400
+Subject: [PATCH] fix windows cuda library load
+
+---
+ include/cudnn_frontend_shim.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/include/cudnn_frontend_shim.h b/include/cudnn_frontend_shim.h
+index f2101c7..ddb7537 100644
+--- a/include/cudnn_frontend_shim.h
++++ b/include/cudnn_frontend_shim.h
+@@ -69,7 +69,11 @@ load_cuda_so() {
+     dlerror();
+ 
+     // Attempt to open the cuda library
++    #ifdef _WIN32
++    HMODULE handle    = dlopen("nvcuda.dll", RTLD_NOW);
++    #else
+     HMODULE handle    = dlopen("libcuda.so", RTLD_NOW);
++    #endif
+     const char *error = reinterpret_cast<const char *>(dlerror());
+     if (!handle || error) {
+         // If opening the library fails, throw an exception with the error message
+@@ -85,7 +89,11 @@ load_cudart_so() {
+     dlerror();
+ 
+     // List of potential libcudart libraries (Adding major version to support python package)
++    #ifdef _WIN32
++    constexpr const char *libs[] = {"cudart64_12.dll", "cudart64_13.dll"};
++    #else
+     constexpr const char *libs[] = {"libcudart.so.12", "libcudart.so.13"};
++    #endif
+     constexpr size_t num_libs    = sizeof(libs) / sizeof(libs[0]);
+ 
+     HMODULE lib_handle = nullptr;
+-- 
+2.51.0
+
