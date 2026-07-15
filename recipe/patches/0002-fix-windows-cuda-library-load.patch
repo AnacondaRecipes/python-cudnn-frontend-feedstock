@@ -1,3 +1,12 @@
+From ca3666b4a6add26fc6d178efd23158f9128265f1 Mon Sep 17 00:00:00 2001
+From: Andrew Howe <ahowe@anaconda.com>
+Date: Wed, 15 Jul 2026 13:35:13 -0400
+Subject: [PATCH] fix windows cuda library load
+
+---
+ include/cudnn_frontend_shim.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
 diff --git a/include/cudnn_frontend_shim.h b/include/cudnn_frontend_shim.h
 index f2101c7..ddb7537 100644
 --- a/include/cudnn_frontend_shim.h
@@ -26,3 +35,6 @@ index f2101c7..ddb7537 100644
      constexpr size_t num_libs    = sizeof(libs) / sizeof(libs[0]);
  
      HMODULE lib_handle = nullptr;
+-- 
+2.51.0
+
