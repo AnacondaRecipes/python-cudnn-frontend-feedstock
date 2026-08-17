@@ -41,7 +41,8 @@ requirements:
     - dlpack
   run:
     - python
-    - cudnn # pinned by run_exports
+    # cudnn pinned by run_exports
+    - cudnn
     - __cuda
 
 # t1441_b32_M3848xN4096xK1936_f32_gelu
