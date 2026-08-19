@@ -1,6 +1,6 @@
-From ca3666b4a6add26fc6d178efd23158f9128265f1 Mon Sep 17 00:00:00 2001
+From 5bc50eaf6b39fc72a7cbf2748cc2216b371882c8 Mon Sep 17 00:00:00 2001
 From: Andrew Howe <ahowe@anaconda.com>
-Date: Wed, 15 Jul 2026 13:35:13 -0400
+Date: Fri, 7 Aug 2026 14:59:33 -0400
 Subject: [PATCH] fix windows cuda library load
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] fix windows cuda library load
  1 file changed, 8 insertions(+)
 
 diff --git a/include/cudnn_frontend_shim.h b/include/cudnn_frontend_shim.h
-index f2101c7..ddb7537 100644
+index 5265388..4d93f0f 100644
 --- a/include/cudnn_frontend_shim.h
 +++ b/include/cudnn_frontend_shim.h
 @@ -69,7 +69,11 @@ load_cuda_so() {
@@ -18,7 +18,7 @@ index f2101c7..ddb7537 100644
 +    #ifdef _WIN32
 +    HMODULE handle    = dlopen("nvcuda.dll", RTLD_NOW);
 +    #else
-     HMODULE handle    = dlopen("libcuda.so", RTLD_NOW);
+     HMODULE handle    = dlopen("libcuda.so.1", RTLD_NOW);
 +    #endif
      const char *error = reinterpret_cast<const char *>(dlerror());
      if (!handle || error) {
