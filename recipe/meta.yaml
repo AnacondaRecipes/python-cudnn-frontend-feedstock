@@ -38,7 +38,8 @@ requirements:
     - pybind11-abi
     - python
     - setuptools >=64
-    - dlpack
+    # dlpack version is listed here: https://github.com/NVIDIA/cudnn-frontend/blob/develop/dlpack_version.txt
+    - dlpack ==1.3
   run:
     - python
     # cudnn pinned by run_exports
