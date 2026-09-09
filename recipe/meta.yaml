@@ -1,6 +1,7 @@
 {% set name = "python-cudnn-frontend" %}
 {% set version = "1.28.0" %}
 {% set build_num = 0 %}
+{% set cuda_major = (cuda_compiler_version or "12") %}
 
 package:
   name: {{ name }}
@@ -40,11 +41,17 @@ requirements:
     - setuptools >=64
     # dlpack version is listed here: https://github.com/NVIDIA/cudnn-frontend/blob/develop/dlpack_version.txt
     - dlpack ==1.3
+    # required by some runtime modules
+    - cuda-bindings {{ cuda_major.split('.')[0] }}.*
   run:
     - python
-    # cudnn pinned by run_exports
+    # pinned by run_exports
     - cudnn
+    - cuda-bindings
     - __cuda
+  run_constrained:
+    - apache-tvm-ffi >=0.1.11
+    - cutile-python >=1.4
 
 # t1441_b32_M3848xN4096xK1936_f32_gelu
 #E   torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 7.39 GiB. GPU 0 has a total capacity of 14.56 GiB of which 6.26 GiB is free
