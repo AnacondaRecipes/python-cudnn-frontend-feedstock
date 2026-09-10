@@ -86,8 +86,11 @@ about:
   doc_url: https://docs.nvidia.com/deeplearning/cudnn/latest/
   dev_url: https://github.com/NVIDIA/cudnn-frontend
 
-
 extra:
+  skip-lints:
+    # `cuda-bindings (cuda_compiler_version or "12").split('.')[0].*` in host should be a concrete package spec with an exact version pinning.
+    # `cudnn` in host should be pinned to its `conda_build_config.yaml` value: `cudnn {{ cudnn }}`.
+    - host_section_needs_exact_pinnings
   recipe-maintainers:
     - jameslamb
     - weiji14
