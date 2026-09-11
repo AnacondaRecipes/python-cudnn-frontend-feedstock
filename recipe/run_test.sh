@@ -1,6 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+export CUDA_HOME=$PREFIX
+
+# Diagnostic output so we can check that we have CUDA
+python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
+python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
+
+PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
+ls -lh "$PREFIX/lib/python$PYVER/site-packages/include/"
+test -f "$PREFIX/lib/python$PYVER/site-packages/include/cudnn_frontend.h"
+
 # CUDA_VER (e.g. "12.9", "13.0") is used below both for the MoE CUDA>=13.1 gate
 # and the aarch64/CUDA-12.x branch.
 CUDA_VER=$(python -c "import torch; print(torch.version.cuda)")
@@ -135,17 +145,6 @@ IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/test_flexible_sdpa_bprop.py"
 IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/fe_api/bsa/test_BSA_attention_fp8.py"
 IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/fe_api/grouped_gemm/test_grouped_gemm_glu_hadamard_quant.py"
 IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/sdpa/frost/test_sdpa_fp8_sm107.py"
-
-
-# Diagnostic output so we can check that we have CUDA
-python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
-python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
-
-PYVER=$(python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')")
-ls -lh "$PREFIX/lib/python$PYVER/site-packages/include/"
-test -f "$PREFIX/lib/python$PYVER/site-packages/include/cudnn_frontend.h"
-
-export CUDA_HOME=$PREFIX
 
 # test_matmul_fuzz failures on our hardware have consistently been VRAM exhaustion,
 # not real bugs, so don't let this file fail the build.

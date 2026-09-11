@@ -4,6 +4,13 @@ REM (CUDA_HOME=$PREFIX) -- Windows conda packages install C/C++ components under
 REM %PREFIX%\Library, not directly under %PREFIX%, hence the different path here.
 set "CUDA_HOME=%PREFIX%\Library"
 
+python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+if not exist %PREFIX%\lib\site-packages\include\cudnn_frontend.h exit /b 1
+
 REM CUDA_VER (e.g. "12.9", "13.0") is used below for the MoE CUDA-13.1-or-newer gate.
 for /f "delims=" %%i in ('python -c "import torch; print(torch.version.cuda)"') do set CUDA_VER=%%i
 
@@ -157,13 +164,6 @@ REM even collect
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/fe_api/bsa/test_BSA_attention_fp8.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/fe_api/grouped_gemm/test_grouped_gemm_glu_hadamard_quant.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/sdpa/frost/test_sdpa_fp8_sm107.py"
-
-python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
-if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
-
-if not exist %PREFIX%\lib\site-packages\include\cudnn_frontend.h exit /b 1
 
 pytest test/python %IGNORE_TESTS% --ignore test/python/test_matmul_fuzzer.py -k "not (%SKIP_TESTS%)"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
