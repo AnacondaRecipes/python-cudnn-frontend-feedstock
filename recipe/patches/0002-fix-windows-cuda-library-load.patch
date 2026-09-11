@@ -1,17 +1,17 @@
-From 5bc50eaf6b39fc72a7cbf2748cc2216b371882c8 Mon Sep 17 00:00:00 2001
+From dae7c2043806895642f2d19e24ca1133bf9c0db0 Mon Sep 17 00:00:00 2001
 From: Andrew Howe <ahowe@anaconda.com>
 Date: Fri, 7 Aug 2026 14:59:33 -0400
-Subject: [PATCH] fix windows cuda library load
+Subject: [PATCH 2/2] fix windows cuda library load
 
 ---
  include/cudnn_frontend_shim.h | 8 ++++++++
  1 file changed, 8 insertions(+)
 
 diff --git a/include/cudnn_frontend_shim.h b/include/cudnn_frontend_shim.h
-index 5265388..4d93f0f 100644
+index d3391705..b6989dcc 100644
 --- a/include/cudnn_frontend_shim.h
 +++ b/include/cudnn_frontend_shim.h
-@@ -69,7 +69,11 @@ load_cuda_so() {
+@@ -72,7 +72,11 @@ load_cuda_so() {
      dlerror();
  
      // Attempt to open the cuda library
@@ -23,8 +23,8 @@ index 5265388..4d93f0f 100644
      const char *error = reinterpret_cast<const char *>(dlerror());
      if (!handle || error) {
          // If opening the library fails, throw an exception with the error message
-@@ -85,7 +89,11 @@ load_cudart_so() {
-     dlerror();
+@@ -109,7 +113,11 @@ load_cudart_so() {
+     }
  
      // List of potential libcudart libraries (Adding major version to support python package)
 +    #ifdef _WIN32
@@ -36,5 +36,5 @@ index 5265388..4d93f0f 100644
  
      HMODULE lib_handle = nullptr;
 -- 
-2.51.0
+2.50.1 (Apple Git-155)
 
