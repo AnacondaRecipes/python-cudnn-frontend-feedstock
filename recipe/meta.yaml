@@ -1,5 +1,5 @@
 {% set name = "python-cudnn-frontend" %}
-{% set version = "1.28.0" %}
+{% set version = "1.31.0" %}
 {% set build_num = 0 %}
 {% set cuda_major = (cuda_compiler_version or "12").split('.')[0] %}
 
@@ -9,15 +9,15 @@ package:
 
 source:
   url: https://github.com/NVIDIA/cudnn-frontend/archive/v{{ version }}.tar.gz
-  sha256: c4c2be237f282d67abee8141b321eee2930464f8a7b3cecb3c3c59e431afa37f
+  sha256: 130f3e98e3f07defd60bf39b250ae7d96c61ca99443782ce77fd470964fbd899
   patches:
     - patches/0001-unvendor-dependencies-dlpack-pybind.patch
     - patches/0002-fix-windows-cuda-library-load.patch
 
 build:
-  number: {{ build_num }}
+  number: 0
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
-  skip: true # [cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith("12"))]
+  skip: true  # [cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith("12"))]
   script:
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
@@ -28,7 +28,7 @@ requirements:
     - {{ compiler('cuda') }}
     - {{ stdlib("c") }}
     - cmake >=3.18
-    - make # [linux]
+    - make  # [linux]
     - ninja-base >=1.11.1.1
   host:
     - cuda-version =={{ cuda_compiler_version }}
@@ -45,6 +45,8 @@ requirements:
     - pybind11-abi
     - python
     - setuptools >=64
+    - cmake >=3.18
+    - ninja ==1.11.1.1
   run:
     - python
     # pinned by run_exports
@@ -52,9 +54,13 @@ requirements:
     - cuda-bindings
     - cuda-cudart-dev
     - __cuda
+    - nvidia-cutlass-dsl >=4.6.2
+    - apache-tvm-ffi >=0.1.11
   run_constrained:
     - apache-tvm-ffi >=0.1.11
     - cutile-python >=1.4
+    - nvshmem4py-cu13 >=0.3.1
+    - cuda-tile >=1.4
 
 test:
   source_files:
