@@ -4,6 +4,11 @@ REM (CUDA_HOME=$PREFIX) -- Windows conda packages install C/C++ components under
 REM %PREFIX%\Library, not directly under %PREFIX%, hence the different path here.
 set "CUDA_HOME=%PREFIX%\Library"
 
+REM PyTorch >= 2.15 reserves ~GPU-memory-sized virtual address ranges for expandable CUDA
+REM segments; the PBP Windows T4 driver rejects this, so every CUDA allocation fails with
+REM E   RuntimeError: CUDA driver error: operation not supported
+set "PYTORCH_ALLOC_CONF=expandable_segments:False"
+
 python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
@@ -155,6 +160,7 @@ set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_mhas.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_mhas_v2.py"
 
 REM These tests require SM8.0 or greater, which our PBP instances do not currently support.
+set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/gnn/test_agg_simple.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_flexible_sdpa.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_flexible_sdpa_bprop.py"
 
