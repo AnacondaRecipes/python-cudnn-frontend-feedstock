@@ -1,6 +1,6 @@
 {% set name = "python-cudnn-frontend" %}
 {% set version = "1.28.0" %}
-{% set build_num = 0 %}
+{% set build_num = 1 %}
 {% set cuda_major = (cuda_compiler_version or "12").split('.')[0] %}
 
 package:
