@@ -10,6 +10,7 @@ REM E   RuntimeError: CUDA driver error: operation not supported
 REM test/python/conftest.py only does os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True,...")
 REM so a value set here wins. Set both names: PYTORCH_ALLOC_CONF is the newer alias.
 set "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False"
+set "PYTORCH_ALLOC_CONF=expandable_segments:False"
 
 python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
