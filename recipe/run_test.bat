@@ -146,6 +146,16 @@ set "SKIP_TESTS=%SKIP_TESTS% or test_causal_conv1d_autograd"
 set "SKIP_TESTS=%SKIP_TESTS% or test_b2b_causal_conv1d_autograd"
 set "SKIP_TESTS=%SKIP_TESTS% or test_causal_conv1d_compiled_autograd"
 
+REM test_fft_causal_conv1d.py: same cause as the causal_conv1d tests above. Status 3000 is
+REM CUDNN_STATUS_NOT_SUPPORTED; the Windows cuDNN 9.26 cudnn_ext64_9.dll (130 KB) exports the
+REM subquadratic-ops entry points but contains none of the kernels the Linux libcudnn_ext.so
+REM (8 MB) ships, so every call is unsupported on Windows. Upstream test only checks backend version.
+REM E   RuntimeError: cudnnFFTCausalConv1dForward failed with status 3000
+REM E   RuntimeError: cudnnLongFFTCausalConv1dGetBufferSizes failed with status 3000
+set "SKIP_TESTS=%SKIP_TESTS% or test_fft_causal_conv1d_forward_and_backward"
+set "SKIP_TESTS=%SKIP_TESTS% or test_medium_fft_supported_dtypes"
+set "SKIP_TESTS=%SKIP_TESTS% or test_long_fft_fake_buffer_formula_matches_backend_query"
+
 REM test_dispatch.py: cudnn.frost.buffers.current_sm() returns None instead of falling
 REM back when cuda-python/cuda-bindings is unavailable, on Windows only -- not seen on
 REM Linux. Root cause not confirmed (no public docs found, unlike causal_conv1d above);
