@@ -17,8 +17,7 @@ source:
 build:
   number: {{ build_num }}
   string: cuda{{ cuda_compiler_version | replace('.', '') }}_py{{ CONDA_PY }}_h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
-  # Skip win-arm64 for now
-  skip: true # [(win and arm64) or cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith("12"))]
+  skip: true # [cuda_compiler_version in (undefined, "None") or osx or (win and (cuda_compiler_version or "12").startswith("12"))]
   script:
     - {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
@@ -79,11 +78,14 @@ about:
     kernels — scaled dot-product attention (SDPA / Flash Attention),
     grouped GEMM fusions for Mixture-of-Experts (MoE) training, fused
     normalization + activation, and more.
-  license: MIT
+  license: Apache-2.0 AND MIT AND BSD-3-Clause
   license_file:
     - LICENSE.txt
+    - LICENSE-MIT.txt
+    - NOTICE
+    - THIRD_PARTY_LICENSES.txt
     - include/cudnn_frontend/thirdparty/nlohmann/LICENSE.MIT
-  license_family: MIT
+  license_family: Other
   doc_url: https://docs.nvidia.com/deeplearning/cudnn/latest/
   dev_url: https://github.com/NVIDIA/cudnn-frontend
 
