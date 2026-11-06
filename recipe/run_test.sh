@@ -146,6 +146,16 @@ IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/fe_api/bsa/test_BSA_attention_f
 IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/fe_api/grouped_gemm/test_grouped_gemm_glu_hadamard_quant.py"
 IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/sdpa/frost/test_sdpa_fp8_sm107.py"
 
+# GNN AggSimple (cudnn-frontend >= 1.28, compiled only with cuDNN >= 9.26) requires
+# compute capability >= 8.0. PBP instances currently run T4 (sm_75), so skip there,
+# but run the tests automatically if the runner is upgraded to Ampere or newer.
+# E   cudnn._compiled_module.cudnnGraphNotSupportedError: cudnnGnnAggSimpleForward failed: CUDNN_STATUS_NOT_SUPPORTED_ARCH_MISMATCH
+GPU_SM_MAJOR=$(python -c "import torch; print(torch.cuda.get_device_capability()[0] if torch.cuda.is_available() else 0)")
+echo "GPU compute capability major: $GPU_SM_MAJOR"
+if [ "$GPU_SM_MAJOR" -lt 8 ]; then
+    IGNORE_TESTS="$IGNORE_TESTS --ignore test/python/gnn/test_agg_simple.py"
+fi
+
 # test_matmul_fuzz failures on our hardware have consistently been VRAM exhaustion,
 # not real bugs, so don't let this file fail the build.
 ARCH=$(uname -m)

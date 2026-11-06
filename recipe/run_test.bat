@@ -4,6 +4,14 @@ REM (CUDA_HOME=$PREFIX) -- Windows conda packages install C/C++ components under
 REM %PREFIX%\Library, not directly under %PREFIX%, hence the different path here.
 set "CUDA_HOME=%PREFIX%\Library"
 
+REM PyTorch >= 2.15 reserves ~GPU-memory-sized virtual address ranges for expandable CUDA
+REM segments; the PBP Windows T4 driver rejects this, so every CUDA allocation fails with
+REM E   RuntimeError: CUDA driver error: operation not supported
+REM test/python/conftest.py only does os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True,...")
+REM so a value set here wins. Set both names: PYTORCH_ALLOC_CONF is the newer alias.
+set "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False"
+set "PYTORCH_ALLOC_CONF=expandable_segments:False"
+
 python -c "import torch.cuda; _a = torch.cuda.is_available(); print('CUDA available:', _a)"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 python -c "import cudnn; assert cudnn.backend_version() >= 91000, cudnn.backend_version()"
@@ -138,6 +146,16 @@ set "SKIP_TESTS=%SKIP_TESTS% or test_causal_conv1d_autograd"
 set "SKIP_TESTS=%SKIP_TESTS% or test_b2b_causal_conv1d_autograd"
 set "SKIP_TESTS=%SKIP_TESTS% or test_causal_conv1d_compiled_autograd"
 
+REM test_fft_causal_conv1d.py: same cause as the causal_conv1d tests above. Status 3000 is
+REM CUDNN_STATUS_NOT_SUPPORTED; the Windows cuDNN 9.26 cudnn_ext64_9.dll (130 KB) exports the
+REM subquadratic-ops entry points but contains none of the kernels the Linux libcudnn_ext.so
+REM (8 MB) ships, so every call is unsupported on Windows. Upstream test only checks backend version.
+REM E   RuntimeError: cudnnFFTCausalConv1dForward failed with status 3000
+REM E   RuntimeError: cudnnLongFFTCausalConv1dGetBufferSizes failed with status 3000
+set "SKIP_TESTS=%SKIP_TESTS% or test_fft_causal_conv1d_forward_and_backward"
+set "SKIP_TESTS=%SKIP_TESTS% or test_medium_fft_supported_dtypes"
+set "SKIP_TESTS=%SKIP_TESTS% or test_long_fft_fake_buffer_formula_matches_backend_query"
+
 REM test_dispatch.py: cudnn.frost.buffers.current_sm() returns None instead of falling
 REM back when cuda-python/cuda-bindings is unavailable, on Windows only -- not seen on
 REM Linux. Root cause not confirmed (no public docs found, unlike causal_conv1d above);
@@ -155,6 +173,7 @@ set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_mhas.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_mhas_v2.py"
 
 REM These tests require SM8.0 or greater, which our PBP instances do not currently support.
+set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/gnn/test_agg_simple.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_flexible_sdpa.py"
 set "IGNORE_TESTS=%IGNORE_TESTS% --ignore test/python/test_flexible_sdpa_bprop.py"
 

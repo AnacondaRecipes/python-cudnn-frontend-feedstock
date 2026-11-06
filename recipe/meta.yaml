@@ -1,6 +1,6 @@
 {% set name = "python-cudnn-frontend" %}
 {% set version = "1.28.0" %}
-{% set build_num = 0 %}
+{% set build_num = 1 %}
 {% set cuda_major = (cuda_compiler_version or "12").split('.')[0] %}
 
 package:
@@ -41,7 +41,7 @@ requirements:
     # dlpack version is listed here: https://github.com/NVIDIA/cudnn-frontend/blob/develop/dlpack_version.txt
     - dlpack ==1.3
     - pip
-    - pybind11 >=2.13,<3
+    - pybind11 >=3,<3.1
     - pybind11-abi
     - python
     - setuptools >=64
@@ -78,11 +78,14 @@ about:
     kernels — scaled dot-product attention (SDPA / Flash Attention),
     grouped GEMM fusions for Mixture-of-Experts (MoE) training, fused
     normalization + activation, and more.
-  license: MIT
+  license: Apache-2.0 AND MIT AND BSD-3-Clause
   license_file:
     - LICENSE.txt
+    - LICENSE-MIT.txt
+    - NOTICE
+    - THIRD_PARTY_LICENSES.txt
     - include/cudnn_frontend/thirdparty/nlohmann/LICENSE.MIT
-  license_family: MIT
+  license_family: Other
   doc_url: https://docs.nvidia.com/deeplearning/cudnn/latest/
   dev_url: https://github.com/NVIDIA/cudnn-frontend
 
